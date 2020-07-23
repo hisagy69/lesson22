@@ -48,6 +48,7 @@ class Todo {
 		} else {
 			alert('Пустое дело добавить нельзя!');
 		}
+		this.input.value = '';
 	}
 	generateKey() {
 		return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
