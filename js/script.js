@@ -32,6 +32,7 @@ class Todo {
 			<div class="todo-buttons">
 				<button class="todo-remove"></button>
 				<button class="todo-complete"></button>
+				<button class="todo-edit"></button>
 			</div>
 		`);
 	}
@@ -53,22 +54,67 @@ class Todo {
 	generateKey() {
 		return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 	}
+	animate(item, translate, callback, direction = 1) {
+		let x = direction;
+		let start = null;
+		let frameSet = 0;
+		let animationId;
+		const animateItem = (timestamp) => {
+			if (!start) {
+				start = 0;
+			}
+			if (x >= 110 || x <= -110) {
+				callback();
+				cancelAnimationFrame(animationId);
+			} else {
+				if (timestamp - start >= frameSet) {
+					frameSet += 0.5;
+					item.style.transform = `${translate}(${x}%)`;
+					x += 5 * direction;
+				}
+				animationId = requestAnimationFrame(animateItem);
+			}
+		}
+		animationId = requestAnimationFrame(animateItem);
+	}
 	deletedItem(event) {
-		this.todoData.delete(event.target.closest('.todo-item').dataset.key);
-		this.render();
+		this.animate(event.target.closest('.todo-item'), 'translateX', () => {
+			this.todoData.delete(event.target.closest('.todo-item').dataset.key);
+			this.addToStorage();
+		});
 	}
 	completedItem(event) {
-		this.todoData.forEach((value, key) => {
-			if (key === event.target.closest('.todo-item').dataset.key) {
-				if (value.completed) {
-					value.completed = false
-				} else {
-					value.completed = true;
+		let direction = 1;
+		if (event.target.closest('.todo-completed')) {
+			direction = -1;
+		}
+		this.animate(event.target.closest('.todo-item'), 'translateY', () => {
+			this.todoData.forEach((value, key) => {
+				if (key === event.target.closest('.todo-item').dataset.key) {
+					if (value.completed) {
+						value.completed = false
+					} else {
+						value.completed = true;
+					}
 				}
-			}
-		});
-
-		this.render();
+			});
+			this.render();
+		}, direction);
+	}
+	editItem() {
+		const target = event.target.closest('.todo-item');
+		if (target.hasAttribute('contenteditable')) {
+			target.removeAttribute('contenteditable');
+			this.todoData.forEach((value, key) => {
+				console.log(value);
+				if (key === target.dataset.key) {
+					value.value = target.textContent.trim();
+				}
+			});
+			this.render();
+		} else {
+			target.contentEditable = true;
+		}
 	}
 	handler() {
 		this.todoContainer.addEventListener('click', (event) => {
@@ -78,6 +124,9 @@ class Todo {
 			}
 			if (target.matches('.todo-complete')) {
 				this.completedItem(event);
+			}
+			if (target.matches('.todo-edit')) {
+				this.editItem(event);
 			}
 		});
 	}
