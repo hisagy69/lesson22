@@ -81,6 +81,7 @@ class Todo {
 		this.animate(event.target.closest('.todo-item'), 'translateX', () => {
 			this.todoData.delete(event.target.closest('.todo-item').dataset.key);
 			this.addToStorage();
+			this.render();
 		});
 	}
 	completedItem(event) {
