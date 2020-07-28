@@ -102,20 +102,20 @@ class Todo {
 			this.render();
 		}, direction);
 	}
-	editItem() {
-		const target = event.target.closest('.todo-item');
-		if (target.hasAttribute('contenteditable')) {
-			target.removeAttribute('contenteditable');
+	editItem(event) {
+		const target = event.target;
+		if (target.matches('.todo-edit')) {	
+			target.closest('.todo-item').contentEditable = true;
+			target.closest('.todo-item').focus();
+		} else if (!target.matches('.todo-edit') && target.closest('.todo-item').hasAttribute('contenteditable')) {
+			target.closest('.todo-item').removeAttribute('contenteditable');
 			this.todoData.forEach((value, key) => {
-				console.log(value);
 				if (key === target.dataset.key) {
 					value.value = target.textContent.trim();
 				}
 			});
 			this.render();
-		} else {
-			target.contentEditable = true;
-		}
+		} 
 	}
 	handler() {
 		this.todoContainer.addEventListener('click', (event) => {
@@ -126,7 +126,7 @@ class Todo {
 			if (target.matches('.todo-complete')) {
 				this.completedItem(event);
 			}
-			if (target.matches('.todo-edit')) {
+			if (target.closest('.todo-item')) {
 				this.editItem(event);
 			}
 		});
